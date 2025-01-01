@@ -2,9 +2,6 @@
 /**
  * WebClient Class
  * 
- * CPSC 441
- * Assignment 2
- * 
  * @author 	Quenten Welch 30054505
  * @version	2024
  *
@@ -18,19 +15,19 @@ import java.net.Socket;
 
 public class WebClient {
 
-	private static final Logger logger = Logger.getLogger("WebClient"); // global logger
+    private static final Logger logger = Logger.getLogger("WebClient"); // global logger
 
     /**
      * Default no-arg constructor
      */
-	public WebClient() {
-		// nothing to do!
-	}
-	
+    public WebClient() {
+        // nothing to do!
+    }
+
     /**
      * Downloads the object specified by the parameter url.
-	 *
-     * @param url	URL of the object to be downloaded. It is a fully qualified URL.
+     *
+     * @param url URL of the object to be downloaded. It is a fully qualified URL.
      */
     public void getObject(String url) {
         // Extracting URL components
@@ -67,7 +64,7 @@ public class WebClient {
             if (socket != null) {
                 try {
                     socket.close();
-                   // System.out.println("Connection closed.");
+                    // System.out.println("Connection closed.");
                 } catch (IOException e) {
                     System.out.println("Error closing socket: " + e.getMessage());
                 }
@@ -76,7 +73,8 @@ public class WebClient {
     }
 
     /**
-     * Parses the URL and returns an array containing the protocol, hostname, port, and pathname.
+     * Parses the URL and returns an array containing the protocol, hostname, port,
+     * and pathname.
      *
      * @param url The URL to be parsed.
      * @return An array containing the protocol, hostname, port, and pathname.
@@ -118,7 +116,7 @@ public class WebClient {
             }
         }
 
-        return new String[]{protocol, hostname, String.valueOf(port), pathname};
+        return new String[] { protocol, hostname, String.valueOf(port), pathname };
     }
 
     /**
@@ -150,74 +148,76 @@ public class WebClient {
     }
 
     /**
-     * Sends a GET request for the specified object and reads the server response headers.
+     * Sends a GET request for the specified object and reads the server response
+     * headers.
      *
      * @param socket   The socket connected to the server.
      * @param pathname The pathname of the object to request.
-     * @param hostname the hostname of the server. 
+     * @param hostname the hostname of the server.
      * @return The server response as a string.
      */
     private String sendGetRequest(Socket socket, String pathname, String hostname) {
-    StringBuilder responseHeaders = new StringBuilder();
-    try {
-        // Send GET request
-        OutputStream outputStream = socket.getOutputStream();
-        String getRequest = "GET " + pathname + " HTTP/1.1\r\n" +
-                             "Host: " + hostname + "\r\n" +
-                             "Connection: close\r\n\r\n";
-        outputStream.write(getRequest.getBytes("US-ASCII"));
-
-        outputStream.flush();
-        System.out.println("REQUEST");
-        System.out.println(getRequest);
-
-        // Read server response headers
-        InputStream inputStream = socket.getInputStream();
-        int b;
-        while ((b = inputStream.read()) != -1) {
-            responseHeaders.append((char) b);
-            if (responseHeaders.toString().endsWith("\r\n\r\n")) {
-                break; // End of headers
-            }
-        }
-    } catch (Exception e) {
-        System.out.println("Error sending GET request or reading response: " + e.getMessage());
-    }
-    return responseHeaders.toString();
-}
-
-/**
- * Checks if the server response status is OK (200) and handles the response body.
- *
- * @param responseHeaders The server response headers as a string.
- * @param socket          The socket connected to the server.
- * @param pathname        The pathname of the object to request.
- */
-private void handleServerResponse(String responseHeaders, Socket socket, String pathname) {
-    if (responseHeaders.contains("200 OK")) {
-        // Response status is OK, proceed to handle the response body
+        StringBuilder responseHeaders = new StringBuilder();
         try {
-            // Create a local file with the object name
-            File file = new File(pathname.substring(pathname.lastIndexOf('/') + 1));
-            FileOutputStream fileOutputStream = new FileOutputStream(file);
+            // Send GET request
+            OutputStream outputStream = socket.getOutputStream();
+            String getRequest = "GET " + pathname + " HTTP/1.1\r\n" +
+                    "Host: " + hostname + "\r\n" +
+                    "Connection: close\r\n\r\n";
+            outputStream.write(getRequest.getBytes("US-ASCII"));
 
-            // Read the response body from the socket and write to the local file
+            outputStream.flush();
+            System.out.println("REQUEST");
+            System.out.println(getRequest);
+
+            // Read server response headers
             InputStream inputStream = socket.getInputStream();
-            byte[] buffer = new byte[4096];
-            int bytesRead;
-            while ((bytesRead = inputStream.read(buffer)) != -1) {
-                fileOutputStream.write(buffer, 0, bytesRead);
+            int b;
+            while ((b = inputStream.read()) != -1) {
+                responseHeaders.append((char) b);
+                if (responseHeaders.toString().endsWith("\r\n\r\n")) {
+                    break; // End of headers
+                }
             }
-
-            fileOutputStream.close();
-          //  System.out.println("File downloaded successfully: " + file.getName());
-        } catch (IOException e) {
-            System.out.println("Error handling server response: " + e.getMessage());
+        } catch (Exception e) {
+            System.out.println("Error sending GET request or reading response: " + e.getMessage());
         }
-    } else {
-        // Server returned a non-OK status
-        System.out.println("Server returned a non-OK status: " + responseHeaders.split("\r\n")[0]);
+        return responseHeaders.toString();
     }
-}
+
+    /**
+     * Checks if the server response status is OK (200) and handles the response
+     * body.
+     *
+     * @param responseHeaders The server response headers as a string.
+     * @param socket          The socket connected to the server.
+     * @param pathname        The pathname of the object to request.
+     */
+    private void handleServerResponse(String responseHeaders, Socket socket, String pathname) {
+        if (responseHeaders.contains("200 OK")) {
+            // Response status is OK, proceed to handle the response body
+            try {
+                // Create a local file with the object name
+                File file = new File(pathname.substring(pathname.lastIndexOf('/') + 1));
+                FileOutputStream fileOutputStream = new FileOutputStream(file);
+
+                // Read the response body from the socket and write to the local file
+                InputStream inputStream = socket.getInputStream();
+                byte[] buffer = new byte[4096];
+                int bytesRead;
+                while ((bytesRead = inputStream.read(buffer)) != -1) {
+                    fileOutputStream.write(buffer, 0, bytesRead);
+                }
+
+                fileOutputStream.close();
+                // System.out.println("File downloaded successfully: " + file.getName());
+            } catch (IOException e) {
+                System.out.println("Error handling server response: " + e.getMessage());
+            }
+        } else {
+            // Server returned a non-OK status
+            System.out.println("Server returned a non-OK status: " + responseHeaders.split("\r\n")[0]);
+        }
+    }
 
 }
